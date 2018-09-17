@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fish Game</title>
+    <script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+    <script>
+        function start() {
+            sjs.open("target", 1220, 710);
+
+            var background = new sjs.Image("Images/space4.png");
+
+            //Player Properties
+
+            var player = new sjs.Image("Images/red_left.png");
+            player.type = "player";
+            player.setSize(92, 90);
+            player.friction = .09;
+            player.accel = .35;
+            player.center()
+
+            sjs.keyDown(RIGHT_KEY, function () {
+                player.setImage("Images/red_right.png");
+                player.pushRight();
+            });
+
+            sjs.keyDown(LEFT_KEY, function () {
+                player.setImage("Images/red_left.png");
+                player.pushLeft();
+            });
+
+            sjs.keyDown(UP_KEY, function () {
+                player.pushUp();
+            });
+
+            sjs.keyDown(DOWN_KEY, function () {
+                player.pushDown();
+            });
+
+            //Powerup 
+            setInterval(function () {
+                var x = Math.floor(Math.random() * 1100);
+                var y = Math.floor(Math.random() * 600);
+                var powerUp = new sjs.Image("Images/powerup.png");
+                powerUp.type = "powerUp";
+                powerUp.setGravity(-0.5);
+                powerUp.setSize(17, 30);
+                powerUp.noBounds = true;
+                powerUp.moveTo(x, y);
+                powerUp.friction = .2;
+            }, 5000);
+
+            sjs.onHit("powerUp", "top_screen", function (x, y) {
+                x.destroy();
+
+            });
+
+            sjs.onHit("player", "powerUp", function (x, y) {
+                x.grow(25, 15);
+                setTimeout(function () {
+                    x.grow(-20, -10);
+                }, 7000);
+                y.destroy();
+            });
+
+            //Enemies
+            setInterval(function () {
+                var speed = Math.round(1 + Math.random() * 10);
+                if (Math.random() > 0.5) {
+                    var enemy = new sjs.Image("Images/battleship_right.png");
+                    enemy.type = "enemy";
+                    enemy.setSize(90, 50);
+                    enemy.noBounds = true;
+                    enemy.friction = 0;
+                    enemy.pushRight(speed);
+                    enemy.scaleSize(.3 + Math.random() * 2.4);
+                    enemy.moveTo(-enemy.getWidth(), Math.random() * (enemy.getClamp().y));
+                } else {
+                    var enemy = new sjs.Image("Images/medfighter_left.png");
+                    enemy.type = "enemy";
+                    enemy.setSize(90, 50);
+                    enemy.noBounds = true;
+                    enemy.friction = 0;
+                    enemy.pushLeft(speed);
+                    enemy.scaleSize(.3 + Math.random() * 2.4);
+                    enemy.moveTo(sjs.getWidth(), Math.random() * (enemy.getClamp().y));
+                }
+            }, 1000);
+
+            sjs.left_screen.offset(-500);
+            sjs.right_screen.offset(500);
+
+            sjs.onHit("enemy", ["right_screen", "left_screen"], function (x, y) {
+                x.destroy();
+
+            });
+
+            //Score
+            var score = 0;
+            var score_txt = new sjs.Text("Score: 0", 21, "lime");
+
+            sjs.onHit("player", "enemy", function (x, y) {
+                if (x.getWidth() > y.getWidth() && x.getHeight() > y.getHeight()) {
+                    score = score + 1;
+                    score_txt.setText("Score: " + score);
+                    localStorage.setItem("score", score);
+                    x.grow(4, 3);
+                    if (score >= 75) {
+                        window.location = "win.html";
+                    }
+                } else {
+
+                    x.destroy();
+                    window.location = "gameover.html";
+                }
+                y.destroy();
+            });
+
+        } //end start
+    </script>
+</head>
+
+<body onload="start()" style=background-color:black>
+    <h1 style=color:lime>Fish Game</h1>
+
+    <div id="target" style="margin:auto;background:grey;"></div>
+</body>
+</html>
